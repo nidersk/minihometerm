@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pdb
+*.egg-info/
+.eggs/
+build/
+dist/
+*.egg
+*.whl
+
+# Virtual env
+.venv/
+.env
+.env.*/
+venv/
+ENV/
+env.bak/
+
+# IDE / Editor
+# Keep VS Code project settings
+# Ignore personal workspace settings, but keep shared configs
+.vscode/*
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.mypy_cache/
+.cache/
+.tox/
+nosetests.xml
+coverage.xml
+
+# Logs
+*.log
+
+# Kivy / App specific
+*.kv~
+*.db
+*.sqlite3

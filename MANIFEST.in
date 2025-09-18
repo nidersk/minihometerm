@@ -1,0 +1,3 @@
+recursive-include assets *
+recursive-include src/minihometerm/assets *
+recursive-include src/minihometerm *.kv

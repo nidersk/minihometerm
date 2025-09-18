@@ -1,0 +1,24 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run Kivy App",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "minihometerm.main",
+      "justMyCode": true,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Run Pytest",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": [
+        "-q"
+      ],
+      "console": "integratedTerminal",
+      "justMyCode": true
+    }
+  ]
+}
