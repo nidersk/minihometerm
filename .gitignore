@@ -19,6 +19,9 @@ venv/
 ENV/
 env.bak/
 
+# Config (local overrides)
+config.ini
+
 # IDE / Editor
 # Keep VS Code project settings
 # Ignore personal workspace settings, but keep shared configs

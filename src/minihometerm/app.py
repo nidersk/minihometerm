@@ -1,11 +1,13 @@
 # flake8: noqa: E402
 import os
+from configparser import ConfigParser
 
 # Ensure Kivy behaves in headless-friendly mode unless a window is explicitly desired.
 os.environ.setdefault("KIVY_NO_ARGS", "1")
 
 from kivy.app import App
 from kivy.lang import Builder
+from kivy.logger import Logger as logger
 from kivy.uix.screenmanager import Screen
 
 # flake8: enable=E402
@@ -44,11 +46,14 @@ class HomeScreen(Screen):
 
 
 class MiniHomeTerm(App):
-    title = "My Kivy App"
+    title = "MiniHomeTerm"
+
+    def __init__(self, cfg: ConfigParser, **kwargs):
+        super().__init__(**kwargs)
 
     def build(self):
         return Builder.load_string(KV)
 
     def on_click_me(self):
         # Placeholder for business logic
-        print("Button clicked!")
+        logger.info("MiniHomeTerm: Button clicked!")

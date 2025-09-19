@@ -5,11 +5,11 @@ os.environ["KIVY_WINDOW"] = "mock"
 os.environ["KIVY_GL_BACKEND"] = "mock"
 
 
-def test_app_title():
+def test_app_title(mock_cfg):
     from minihometerm.app import MiniHomeTerm
 
-    app = MiniHomeTerm()
-    assert app.title == "My Kivy App"
+    app = MiniHomeTerm(cfg=mock_cfg)
+    assert app.title == "MiniHomeTerm"
 
 
 # def test_build_returns_widget():
@@ -25,10 +25,13 @@ def test_app_title():
 #     assert "home" in root.current_screen.name
 
 
-def test_on_click_me_prints(capsys):
+def test_on_click_me_prints(caplog, mock_cfg):
     from minihometerm.app import MiniHomeTerm
 
-    app = MiniHomeTerm()
-    app.on_click_me()
-    captured = capsys.readouterr()
-    assert "Button clicked!" in captured.out
+    app = MiniHomeTerm(cfg=mock_cfg)
+    with caplog.at_level("INFO"):
+        app.on_click_me()
+
+    assert any("Button clicked!" in message for message in caplog.messages)
+
+    assert any("Button clicked!" in message for message in caplog.messages)
