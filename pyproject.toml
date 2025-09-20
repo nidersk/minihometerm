@@ -11,6 +11,8 @@ requires-python = ">=3.9"
 authors = [{ name = "Peter Nitschneider", email = "info@nider.sk" }]
 dependencies = [
     "kivy>=2.3.0",
+    "HomeAssistant-API>=4.0.0",
+    "websocket-client>=1.8.0",
 ]
 
 [project.optional-dependencies]
