@@ -32,6 +32,23 @@ def load_config() -> ConfigParser:
     )
 
     config.setdefaults(
+        "display",
+        {
+            "display_dim_timeout": "60",
+            "display_off_timeout": "200",
+        },
+    )
+
+    config.setdefaults(
+        "graphics",
+        {
+            "fullscreen": "1",
+            "width": "720",
+            "height": "720",
+        },
+    )
+
+    config.setdefaults(
         "ui",
         {
             "theme": "dark",
