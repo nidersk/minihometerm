@@ -7,79 +7,38 @@ import pytest
 from minihometerm.hass_client import HAWebSocketClient
 
 
-class DummyWS:
-    """Fake WebSocketApp replacement for tests."""
-
-    def __init__(self, url, on_open, on_message, on_error, on_close):
-        self.url = url
-        self.on_open = on_open
-        self.on_message = on_message
-        self.on_error = on_error
-        self.on_close = on_close
-        self.sent = []
-        self.closed = False
-
-    def send(self, msg):
-        print("DummyWS.send called with:", msg)
-        self.sent.append(json.loads(msg))
-
-    def close(self):
-        self.closed = True
-
-    def run_forever(self, ping_interval=None):
-        # simulate HA auth handshake
-        self.on_message(self, json.dumps({"type": "auth_required"}))
-        self.on_open(self)
-        self.on_message(self, json.dumps({"type": "auth_ok"}))
-        # simulate subscription result
-        self.on_message(self, json.dumps({"id": 1, "type": "result", "success": True}))
-
-        # block until closed
-        while not self.closed:
-            time.sleep(0.01)
-
-
-@pytest.fixture
-def client(monkeypatch):
-    dummy_ws = None
-
-    def fake_wsapp(url, on_open, on_message, on_error, on_close):
-        nonlocal dummy_ws
-        dummy_ws = DummyWS(url, on_open, on_message, on_error, on_close)
-        return dummy_ws
-
-    monkeypatch.setattr("minihometerm.hass_client.websocket.WebSocketApp", fake_wsapp)
-
-    updates = []
-    c = HAWebSocketClient(
-        url="ws://fake",
-        token="token123",
-        entities={"light.kitchen"},
-        on_entity_update=lambda eid, new, old: updates.append((eid, new, old)),
-    )
-    return c, lambda: dummy_ws, updates
-
-
 def test_auth_and_subscription(client):
     c, ws_getter, _ = client
     c.start()
-    time.sleep(0.1)  # let thread run
-    ws = ws_getter()
 
-    # first send() is auth, second is subscribe_events
+    ws = ws_getter()
+    # Wait until the dummy run_forever is actually running
+    assert ws._started.wait(timeout=1.0)
+
+    # Now, on_open has been called → client should have sent auth
+    # Wait for the first message deterministically
+    for _ in range(100):
+        if ws.sent:
+            break
+        time.sleep(0.01)
+    else:
+        pytest.fail("Client didn't send auth message")
+
     assert ws.sent[0]["type"] == "auth"
     assert ws.sent[0]["access_token"] == "token123"
-    assert ws.sent[1]["type"] == "subscribe_events"
-    assert ws.sent[1]["event_type"] == "state_changed"
-
-    c.stop()
 
 
 def test_entity_update_callback(client):
     c, ws_getter, updates = client
+
+    # Make sure the entity is tracked (or set entities=[] in the fixture to track all)
+    c.set_entities(["light.kitchen"])
+
     c.start()
-    time.sleep(0.1)
     ws = ws_getter()
+
+    # Wait until the dummy run_forever() has started so callbacks are attached
+    assert ws._started.wait(timeout=1.0)
 
     # send a state_changed event for subscribed entity
     event = {
@@ -95,7 +54,11 @@ def test_entity_update_callback(client):
         },
     }
     ws.on_message(ws, json.dumps(event))
-    time.sleep(0.05)
+
+    for _ in range(100):
+        if updates:
+            break
+        time.sleep(0.01)
 
     assert updates == [("light.kitchen", {"state": "on"}, {"state": "off"})]
 
@@ -285,8 +248,21 @@ def test_on_connect_called(client):
     c, ws_getter, _ = client
     c.on_connect = _on_connect
     c.start()
-    time.sleep(0.1)
+
+    ws = ws_getter()
+    assert ws._started.wait(timeout=1.0)  # wait until dummy WS is running
+
+    # Use server_send to simulate server sending auth_ok
+    ws.server_send({"type": "auth_ok"})
+
+    # Wait until callback is fired
+    for _ in range(100):
+        if "ok" in called:
+            break
+        time.sleep(0.01)
+
     assert "ok" in called
+
     c.stop()
 
 

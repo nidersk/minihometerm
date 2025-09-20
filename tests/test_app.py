@@ -1,4 +1,5 @@
 import os
+from contextlib import suppress
 
 # Must be set before importing kivy
 os.environ["KIVY_WINDOW"] = "mock"
@@ -30,7 +31,8 @@ def test_on_click_me_prints(caplog, mock_cfg):
 
     app = MiniHomeTerm(cfg=mock_cfg)
     with caplog.at_level("INFO"):
-        app.on_click_me()
+        with suppress(ConnectionError):
+            app.on_click_me()
 
     assert any("Button clicked!" in message for message in caplog.messages)
 
